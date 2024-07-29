@@ -1,6 +1,7 @@
 #include <Wire.h>
 #include <Keypad.h>
 #include <Adafruit_LEDBackpack.h>
+#include <EEPROM.h>
 
 Adafruit_7segment matrix = Adafruit_7segment();
 
@@ -38,6 +39,8 @@ void setup() {
   pinMode(7, INPUT); // R3
   pinMode(8, INPUT); // R2
   pinMode(9, INPUT); // R1
+
+  EEPROM.get(0, customStr);
 }
 
 void updateMatrix() {
@@ -76,11 +79,14 @@ void loop() {
     if (customKey == '*') {
       customKey = '.';
       strncat(customStr, &customKey, 1);
+      EEPROM.put(0, customStr);
     } else if (customKey == '#') {
       customStr[0] = '\0'; // Clear the string
+      EEPROM.put(0, customStr);
       Serial.println("Cleared");
     } else {
       strncat(customStr, &customKey, 1);
+      EEPROM.put(0, customStr);
     }
 
     Serial.print(customStr);
@@ -97,13 +103,13 @@ void loop() {
     }
   }
   
-  if ((!customStrModified) && strcmp(customStr, customStrBackup) != 0) {
-    Serial.println("CustomStr compromised!");
-    if (customStrBackup[0] != '\0') {
-      strncpy(customStr, customStrBackup, sizeof(customStr) - 1);
-      customStr[sizeof(customStr) - 1] = '\0'; // Ensure null termination
-    }
-  }
+  // if ((!customStrModified) && strcmp(customStr, customStrBackup) != 0) {
+  //   Serial.println("CustomStr compromised!");
+  //   if (customStrBackup[0] != '\0') {
+  //     strncpy(customStr, customStrBackup, sizeof(customStr) - 1);
+  //     customStr[sizeof(customStr) - 1] = '\0'; // Ensure null termination
+  //   }
+  // }
   strncpy(customStrBackup, customStr, sizeof(customStrBackup) - 1);
   customStrBackup[sizeof(customStrBackup) - 1] = '\0'; // Ensure null termination
   customStrModified = false;
